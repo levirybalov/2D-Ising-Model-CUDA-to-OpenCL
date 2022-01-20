@@ -40,36 +40,9 @@ using namespace std;
 #include <string.h>
 #include <math.h>
 #include <time.h>
-//#include <cutil.h>
 
-// #defines located in header.hpp
+// other #defines located in header.hpp
 
-/****
- *
- *  Function declaration
- *
- */
-//void calc(int argc, char** argv);
-//void cpu_function(double*, int*);
-//__global__ void device_function_main(int*, int*, int*, float, bool);
-
-/****
- *
- *  Main function
- *
- */
-/*
-int main(int argc, char** argv) {
-	calc(argc, argv);
-}
-*/
-
-/****
- *
- *  Calc
- *
- */
-//void calc(int argc, char** argv) {
 void calc(cl_device_id device, cl_int status, cl_context context, cl_command_queue commandQueue, cl_kernel kernel, cl_int err) {
 
 	printf(" ----------------------------------------------------------------------- \n");
@@ -107,10 +80,6 @@ void calc(cl_device_id device, cl_int status, cl_context context, cl_command_que
 	printf(" Global Iterations: %d \n", GLOBAL_ITERATIONS);
 
 	//Init
-	// Following two commands commented out; first one is unnecessary, the second is replaced using <random> where drand48() once was 
-	//CUT_DEVICE_INIT(argc, argv);
-	//srand48(23);
-
 	//Allocate and init host memory for output arrays
 	// h_ for host
 	int num_entries = 0;
@@ -169,92 +138,20 @@ void calc(cl_device_id device, cl_int status, cl_context context, cl_command_que
 		else h_S[i] = 1;
 	}
 
-	/******************************* NOTE: in OpenCL, the allocation and copying are done simultaneously, so the following steps
-	1) setting up timer; 2) allocating memory; 3) destroying timer, printing message; 4) starting timer; 5) transferring memory; 6) destroying timer, printing message
+	/******************************* 
+	NOTE: in OpenCL, the allocation and copying are done simultaneously, so the following steps
+	1) setting up timer; 2) allocating memory; 3) destroying timer, printing message; 
+	4) starting timer; 5) transferring memory; 6) destroying timer, printing message
 	will be condensed into much less code
 	********************************/
-
-	/*
-	//Create and start timer
-	// CUDA_SAFE_CALL is outdated and unnecessary as of a while ago (CUDA 5.0?)
-	// and it can pretty much just be regarded as calling the function that is its
-	// argument
-	float gpu_sum = 0;
-	unsigned int timer = 0;
-	CUDA_SAFE_CALL(cudaThreadSynchronize());
-	CUT_SAFE_CALL(cutCreateTimer(&timer));
-	CUT_SAFE_CALL(cutStartTimer(timer));
-
-	//Allocate device memory for arrays
-	// d_ for device
-	int* d_random_data;
-	int* d_S;
-	int* d_out;
-	// creates unintialized arrays on the GPU corresponding to the arrays on the CPU from
-	// which they are being copied
-	CUDA_SAFE_CALL(cudaMalloc((void**)& d_random_data, mem_size_random));
-	CUDA_SAFE_CALL(cudaMalloc((void**)& d_S, mem_size));
-	CUDA_SAFE_CALL(cudaMalloc((void**)& d_out, mem_size_out));
-
-	//Stop and destroy timer
-	CUDA_SAFE_CALL(cudaThreadSynchronize());
-	CUT_SAFE_CALL(cutStopTimer(timer));
-	float gpu_dt_malloc = cutGetTimerValue(timer);
-	gpu_sum += gpu_dt_malloc;
-	printf("\n --------------------------------- GPU --------------------------------- \n");
-	printf(" Processing time on GPU for allocating: %f (ms) \n", gpu_dt_malloc);
-	CUT_SAFE_CALL(cutDeleteTimer(timer));
-
-	//Create and start timer
-	timer = 0;
-	CUDA_SAFE_CALL(cudaThreadSynchronize());
-	CUT_SAFE_CALL(cutCreateTimer(&timer));
-	CUT_SAFE_CALL(cutStartTimer(timer));
-
-	//Copy host memory to device and create mirror of d_S
-	CUDA_SAFE_CALL(cudaMemcpy(d_random_data, h_random_data, mem_size_random, cudaMemcpyHostToDevice));
-	CUDA_SAFE_CALL(cudaMemcpy(d_S, h_S, mem_size, cudaMemcpyHostToDevice));
-
-	//Stop and destroy timer
-	CUDA_SAFE_CALL(cudaThreadSynchronize());
-	CUT_SAFE_CALL(cutStopTimer(timer));
-	float gpu_dt_mem = cutGetTimerValue(timer);
-	gpu_sum += gpu_dt_mem;
-	printf(" Processing time on GPU for memory transfer: %f (ms) \n", gpu_dt_mem);
-	CUT_SAFE_CALL(cutDeleteTimer(timer));
-	*/
-
-	// clGetDeviceAndHostTimer deprecated???
-	/*
-	cl_ulong device_timestamp;
-	cl_ulong host_timestamp;
-	cl_int err = clGetDeviceAndHostTimer(device, &device_timestamp, &host_timestamp);
-	cl_ulong current_device_time = device_timestamp;
-	cl_ulong current_host_time = host_timestamp;
-	*/
 
 	cl_mem d_random_data = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, mem_size_random, (void*) h_random_data, &err);
 	cl_mem d_S = clCreateBuffer(context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, mem_size, (void*) h_S, &err);
 	cl_mem d_out = clCreateBuffer(context, CL_MEM_WRITE_ONLY, mem_size_out, (void* ) NULL, &err);
-	/*
-	int* d_random_data;
-	int* d_S;
-	int* d_out;
-	*/
-
-	// clGetDeviceAndHostTimer deprecated???
-	/*
-	clGetDeviceAndHostTimer(device, &device_timestamp, &host_timestamp);
-	cout << "Processing time on GPU for memory allocation and transfer (according to device):" << device_timestamp - current_device_time << endl;
-	cout << "Processing time on GPU for memory allocation and transfer (according to host):" << host_timestamp - current_host_time << endl;
-	current_device_time = device_timestamp;
-	current_host_time = host_timestamp;
-	*/
 
 	//Print spins
 	if (FLAG_PRINT_SPINS) {
 		// copy spins from device to host
-		// CUDA_SAFE_CALL(cudaMemcpy(h_S, d_S, mem_size, cudaMemcpyDeviceToHost));
 		for (int i = 0;i < BLOCK_SIZE * 2;i++) {
 			for (int j = 0;j < BLOCK_SIZE * 2;j++) {
 				// this prints a row with BLOCK_SIZE*2 columns
@@ -276,63 +173,40 @@ void calc(cl_device_id device, cl_int status, cl_context context, cl_command_que
 		printf("\n");
 	}
 
-	/*
-	//Create and start timer
-	timer = 0;
-	CUDA_SAFE_CALL(cudaThreadSynchronize());
-	CUT_SAFE_CALL(cutCreateTimer(&timer));
-	CUT_SAFE_CALL(cutStartTimer(timer));
-	*/
-
 	//Calc energy
 	num_entries = 0;
-	/*
-	dim3 threads(BLOCK_SIZE);
-	dim3 grid(BLOCK_SIZE);
-	*/ 
-
 	const size_t numThreads[1] = { BLOCK_SIZE * BLOCK_SIZE };
 	const size_t numBlocks[1] = { BLOCK_SIZE };
-//	for (float t = T_START;t >= T_END;t = t * T_FACTOR) {
 	for (cl_float t = T_START;t >= T_END;t = t * T_FACTOR) {
 		double avg_H = 0;
 		for (int global_iteration = 0;global_iteration < GLOBAL_ITERATIONS;global_iteration++) {
 			cl_float temperature[1] = { t };
 			cl_int trueClause[1] = { 1 };
 			cl_int falseClause[1] = { 0 };
-			//device_function_main << <grid, threads >> > (d_S, d_out, d_random_data, t, true);
 			status = clSetKernelArg(kernel, 0, sizeof(cl_mem), (void*)& d_S);
 			status = clSetKernelArg(kernel, 1, sizeof(cl_mem), (void*)& d_out);
 			status = clSetKernelArg(kernel, 2, sizeof(cl_mem), (void*)& d_random_data);
 			status = clSetKernelArg(kernel, 3, sizeof(cl_mem), (void*)& temperature);
-			//status = clSetKernelArg(kernel, 4, sizeof(cl_mem), (void*) true);
 			status = clSetKernelArg(kernel, 4, sizeof(cl_mem), (void*) trueClause);
 			status = clEnqueueNDRangeKernel(commandQueue, kernel, 1, NULL, numThreads, numBlocks, 0, NULL, NULL);
 
-			//device_function_main << <grid, threads >> > (d_S, d_out, d_random_data, t, false);			
 			status = clSetKernelArg(kernel, 0, sizeof(cl_mem), (void*)& d_S);
 			status = clSetKernelArg(kernel, 1, sizeof(cl_mem), (void*)& d_out);
 			status = clSetKernelArg(kernel, 2, sizeof(cl_mem), (void*)& d_random_data);
 			status = clSetKernelArg(kernel, 3, sizeof(cl_mem), (void*)& temperature);
-			//status = clSetKernelArg(kernel, 4, sizeof(cl_mem), (void*) false);
 			status = clSetKernelArg(kernel, 4, sizeof(cl_mem), (void*) falseClause);
 			status = clEnqueueNDRangeKernel(commandQueue, kernel, 1, NULL, numThreads, numBlocks, 0, NULL, NULL);
 
-			// CUDA_SAFE_CALL(cudaMemcpy(h_out, d_out, mem_size_out, cudaMemcpyDeviceToHost));
 			status = clEnqueueReadBuffer(commandQueue, d_out, CL_TRUE, 0, mem_size_out, h_out, 0, NULL, NULL);
 
-			//int energy_sum = 0;
 			cl_int energy_sum = 0;
 			for (int i = 0;i < BLOCK_SIZE;i++) {
 				energy_sum += h_out[i];
-				//cout << "energy_sum = " << energy_sum << ", h_out[i] = " << h_out[i] << endl;
 			}
 			avg_H += (float)energy_sum / N;
 		}
 		h_E[num_entries] = avg_H / GLOBAL_ITERATIONS;
 		num_entries++;
-		//cout << "num_entries: " << num_entries << endl;
-		//cout << "t: " << t << endl;
 	}
 
 	cout << "Temperatures: " << endl;
@@ -353,35 +227,8 @@ void calc(cl_device_id device, cl_int status, cl_context context, cl_command_que
 	}
 	cout << endl;
 
-	/*
-	//Stop and destroy timer
-	CUDA_SAFE_CALL(cudaThreadSynchronize());
-	CUT_SAFE_CALL(cutStopTimer(timer));
-	float gpu_dt_main = cutGetTimerValue(timer);
-	gpu_sum += gpu_dt_main;
-	printf(" Processing time on GPU for main function: %f (ms) \n", gpu_dt_main);
-	printf(" Total processing time on GPU: %f (ms) \n", gpu_sum);
-	CUT_SAFE_CALL(cutDeleteTimer(timer));
-	*/
-
-	// clGetDeviceAndHostTimer deprecated???
-	/*
-	clGetDeviceAndHostTimer(device, &device_timestamp, &host_timestamp);
-	cout << "Processing time on GPU for main function (according to device):" << device_timestamp - current_device_time << endl;
-	cout << "Processing time on GPU for main function (according to host):" << host_timestamp - current_host_time << endl;
-	current_device_time = device_timestamp;
-	current_host_time = host_timestamp;
-	*/
-
-	/*
-	//Check kernel execution
-	CUT_CHECK_ERROR("Kernel execution failed");
-	*/
-
-
 	//Print spins
 	if (FLAG_PRINT_SPINS) {
-		//CUDA_SAFE_CALL(cudaMemcpy(h_S, d_S, mem_size, cudaMemcpyDeviceToHost));
 		status = clEnqueueReadBuffer(commandQueue, d_S, CL_TRUE, 0, mem_size, h_S, 0, NULL, NULL);
 		for (int i = 0;i < BLOCK_SIZE * 2;i++) {
 			for (int j = 0;j < BLOCK_SIZE * 2;j++) {
@@ -391,21 +238,6 @@ void calc(cl_device_id device, cl_int status, cl_context context, cl_command_que
 			printf("\n");
 		}
 	}
-
-	/*
-	//Create and start timer
-	timer = 0;
-	CUDA_SAFE_CALL(cudaThreadSynchronize());
-	CUT_SAFE_CALL(cutCreateTimer(&timer));
-	CUT_SAFE_CALL(cutStartTimer(timer));
-	*/
-
-	// clGetDeviceAndHostTimer deprecated???
-	/*
-	clGetDeviceAndHostTimer(device, &device_timestamp, &host_timestamp);
-	current_device_time = device_timestamp;
-	current_host_time = host_timestamp;
-	*/
 
 	//Reference solution
  	cpu_function(h_ref_E, h_S);
@@ -422,25 +254,6 @@ void calc(cl_device_id device, cl_int status, cl_context context, cl_command_que
 		}
 	}
 
-	/*
-	//Stop and destroy timer
-	CUDA_SAFE_CALL(cudaThreadSynchronize());
-	CUT_SAFE_CALL(cutStopTimer(timer));
-	float cpu_sum = cutGetTimerValue(timer);
-	printf("\n --------------------------------- CPU --------------------------------- \n");
-	printf(" Total processing time on CPU: %f (ms) \n", cpu_sum);
-	CUT_SAFE_CALL(cutDeleteTimer(timer));
-	printf("\n Speedup: %fX \n\n", (cpu_sum / gpu_sum));
-	*/
-
-	// clGetDeviceAndHostTimer deprecated???
-	/*
-	clGetDeviceAndHostTimer(device, &device_timestamp, &host_timestamp);
-	cout << "Processing time on CPU:" << device_timestamp - current_device_time << endl;
-	cout << "Processing time on CPU:" << host_timestamp - current_host_time << endl;
-	current_device_time = device_timestamp;
-	current_host_time = host_timestamp;
-	*/
 
 	//Cleaning memory
 	free(h_T);
@@ -449,11 +262,6 @@ void calc(cl_device_id device, cl_int status, cl_context context, cl_command_que
 	free(h_random_data);
 	free(h_S);
 	free(h_out);
-	/*
-	CUDA_SAFE_CALL(cudaFree(d_random_data));
-	CUDA_SAFE_CALL(cudaFree(d_S));
-	CUDA_SAFE_CALL(cudaFree(d_out));
-	*/
 	status = clReleaseMemObject(d_random_data);	
 	status = clReleaseMemObject(d_S);
 	status = clReleaseMemObject(d_out);
