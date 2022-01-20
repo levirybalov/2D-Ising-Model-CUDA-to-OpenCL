@@ -1,10 +1,10 @@
 /**********************************************************************
-Copyright ©2015 Advanced Micro Devices, Inc. All rights reserved.
+Copyright Â©2015 Advanced Micro Devices, Inc. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 
-•	Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-•	Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or
+â€¢	Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+â€¢	Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or
  other materials provided with the distribution.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -112,15 +112,6 @@ int main(int argc, char* argv[])
 	cl_command_queue commandQueue = clCreateCommandQueueWithProperties(context, devices[0], NULL, &err);
 
 	/*Step 5: Create program object */
-	/*
-	const char* filename = "kernel.cl";
-	string sourceStr;
-	status = convertToString(filename, sourceStr);
-	const char* source = sourceStr.c_str();
-	size_t sourceSize[] = { strlen(source) };
-	cl_program program = clCreateProgramWithSource(context, 1, &source, sourceSize, NULL);
-	*/
-
 	const char* filename2 = "device_function_main.cl";
 	string sourceStr2;
 	status = convertToString(filename2, sourceStr2);
@@ -128,22 +119,7 @@ int main(int argc, char* argv[])
 	size_t sourceSize2[] = { strlen(source2) };
 	cl_program program2 = clCreateProgramWithSource(context, 1, &source2, sourceSize2, &err);
 	
-	/*
-	const char* filename3 = "header.hpp";
-	string sourceStr3;
-	status = convertToString(filename3, sourceStr3);
-	const char* source3 = sourceStr3.c_str();
-	size_t sourceSize3[] = { strlen(source3) };
-
-	const char* input_header_names[2] = { "device_function_main.cl", "header.hpp" };
-	size_t sourceSizes[2] = { strlen(source2) , strlen(source3) };
-	cl_program program2 = clCreateProgramWithSource(context, 2, input_header_names, sourceSizes, &err);
-	*/
-
 	/*Step 6: Build program. */
-	/*
-	status = clBuildProgram(program, 1, devices, NULL, NULL, NULL);
-	*/
    	status = clBuildProgram(program2, 1, devices, NULL, NULL, NULL);
 
 	if (status == CL_BUILD_PROGRAM_FAILURE) {
@@ -166,22 +142,10 @@ int main(int argc, char* argv[])
 		myfile.close();
 	}
 
-	/*Step 7: Initial input,output for the host and create memory objects for the kernel*/
-	/*
-	const char* input = "GdkknVnqkc";
-	size_t strlength = strlen(input);
-	cout << "input string:" << endl;
-	cout << input << endl;
-	char* output = (char*)malloc(strlength + 1);
-
-	cl_mem inputBuffer = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, (strlength + 1) * sizeof(char), (void*) input, NULL);
-	cl_mem outputBuffer = clCreateBuffer(context, CL_MEM_WRITE_ONLY, (strlength + 1) * sizeof(char), NULL, NULL);
-	*/
+	/*Step 7: Initial input,output for the host and create memory objects for the kernel
+	(not necessary here) */
 
 	/*Step 8: Create kernel object */
-	/*
-	cl_kernel kernel = clCreateKernel(program, "helloworld", NULL);
-	*/
 	cl_kernel kernel2 = clCreateKernel(program2, "device_function_main", &err);
 
 	printf("\n\n\nNOTE: Not running on OpenCL 2.2; getDeviceAndHostTimer() and work_group_barrier() do not work!!!\n\n\n");
@@ -208,28 +172,21 @@ int main(int argc, char* argv[])
 	calc(devices[0], status, context, commandQueue, kernel2, err);
 
 
-	/*Step 9: Sets Kernel arguments.*/
-	//status = clSetKernelArg(kernel, 0, sizeof(cl_mem), (void*)& inputBuffer);
-	//status = clSetKernelArg(kernel, 1, sizeof(cl_mem), (void*)& outputBuffer);
+	/*Step 9: Sets Kernel arguments.
+	(not necessary here) */
+	
+	
+	/*Step 10: Running the kernel.	
+	(not necessary here) */
 
-	/*Step 10: Running the kernel.*/
-	//size_t global_work_size[1] = { strlength };
-	//status = clEnqueueNDRangeKernel(commandQueue, kernel, 1, NULL, global_work_size, NULL, 0, NULL, NULL);
 
-	/*Step 11: Read the cout put back to host memory.*/
-	//status = clEnqueueReadBuffer(commandQueue, outputBuffer, CL_TRUE, 0, strlength * sizeof(char), output, 0, NULL, NULL);
-
-	//output[strlength] = '\0';	//Add the terminal character to the end of output.
-	//cout << "\noutput string:" << endl;
-	//cout << output << endl;
+	/*Step 11: Read the cout put back to host memory.	
+	(not necessary here) */
 
 	/*Step 12: Clean the resources.*/
-	//status = clReleaseKernel(kernel);				//Release kernel.
-	//status = clReleaseProgram(program);				//Release the program object.
 	status = clReleaseKernel(kernel2);				//Release kernel.
-	status = clReleaseProgram(program2);//status = clReleaseMemObject(inputBuffer);		//Release mem object.
-	//status = clReleaseMemObject(outputBuffer);
-	status = clReleaseCommandQueue(commandQueue);	//Release  Command queue.
+	status = clReleaseProgram(program2);				//Release the program object.
+	status = clReleaseCommandQueue(commandQueue);			//Release  Command queue.
 	status = clReleaseContext(context);				//Release context.
 
 	/*
@@ -247,21 +204,5 @@ int main(int argc, char* argv[])
 	std::cout << "Passed!\n";
 
 	
-	/*
-	const char* filename2 = "device_function_main.cl";
-	string sourceStr2;
-	status = convertToString(filename2, sourceStr2);
-	const char* source2 = sourceStr2.c_str();
-	size_t sourceSize2[] = { strlen(source2) };
-	cl_program program2 = clCreateProgramWithSource(context, 1, &source2, sourceSize2, &err);
-
-	status = clBuildProgram(program2, 1, devices, NULL, NULL, NULL);
-
-	cl_kernel kernel2 = clCreateKernel(program2, "device_function_main", &err);
-
-
-	calc(devices[0], status, context, commandQueue, kernel2, err);
-	*/
-
 	return SUCCESS;
 }
