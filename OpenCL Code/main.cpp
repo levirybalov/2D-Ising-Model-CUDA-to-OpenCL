@@ -189,13 +189,6 @@ int main(int argc, char* argv[])
 	status = clReleaseCommandQueue(commandQueue);			//Release  Command queue.
 	status = clReleaseContext(context);				//Release context.
 
-	/*
-	if (output != NULL)
-	{
-		free(output);
-		output = NULL;
-	}
-	*/
 	if (devices != NULL)
 	{
 		free(devices);
